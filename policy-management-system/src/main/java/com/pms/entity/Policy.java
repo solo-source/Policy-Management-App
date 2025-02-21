@@ -1,4 +1,4 @@
-package com.pms.model;
+package com.pms.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
@@ -20,7 +20,7 @@ public class Policy {
     private String policyStatus;
     private String annuityTerm;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
