@@ -3,8 +3,8 @@ package com.pms.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.pms.entity.Policy;
+import com.pms.entity.Customer;
 
 @Repository
-public interface PolicyRepository extends JpaRepository<Policy, Long> {
+public interface CustomerRepository extends JpaRepository<Customer, Long> {
 }
