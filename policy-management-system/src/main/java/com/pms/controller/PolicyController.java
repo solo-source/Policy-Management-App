@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import com.pms.entity.Policy;
 import com.pms.service.PolicyService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/policies")
 public class PolicyController {
@@ -15,14 +17,13 @@ public class PolicyController {
     private PolicyService policyService;
 
     @PostMapping("/create")
-    public ResponseEntity<Policy> createPolicy(@RequestBody Policy policy) {
+    public ResponseEntity<Policy> createPolicy(@Valid @RequestBody Policy policy) {
         Policy createdPolicy = policyService.createPolicy(policy);
         return ResponseEntity.ok(createdPolicy);
     }
     
-    // Endpoints for updating, closing, and viewing policies need to be created.
     @PutMapping("/update/{id}")
-    public ResponseEntity<Policy> updatePolicy(@PathVariable Long id, @RequestBody Policy policyDetails) {
+    public ResponseEntity<Policy> updatePolicy(@PathVariable Long id, @Valid @RequestBody Policy policyDetails) {
         Policy updatedPolicy = policyService.updatePolicy(id, policyDetails);
         return ResponseEntity.ok(updatedPolicy);
     }
@@ -32,6 +33,4 @@ public class PolicyController {
         Policy policy = policyService.getPolicyById(id);
         return ResponseEntity.ok(policy);
     }
-
-
 }

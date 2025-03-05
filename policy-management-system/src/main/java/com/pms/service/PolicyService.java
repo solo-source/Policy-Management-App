@@ -2,6 +2,7 @@ package com.pms.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import com.pms.entity.Policy;
 import com.pms.exception.ResourceNotFoundException;
@@ -10,6 +11,7 @@ import com.pms.repository.CustomerRepository;
 import com.pms.repository.SchemeRepository;
 
 @Service
+@Validated
 public class PolicyService {
 
     @Autowired
@@ -36,7 +38,7 @@ public class PolicyService {
                 (policy.getScheme() != null ? policy.getScheme().getId() : "null"));
         }
         
-        // Process and save the policy
+        // Create and save the policy (customer, scheme, and policyId remain as provided)
         return policyRepository.save(policy);
     }
     
@@ -45,54 +47,47 @@ public class PolicyService {
         Policy existingPolicy = policyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Policy not found with id " + id));
 
-        // Ensure that the restricted fields are not being updated
-        // Check customer: if provided, it must match the existing policy's customer
+        // Ensure that the restricted fields are not being updated:
+        // - Customer, Scheme, and PolicyId must remain unchanged.
         if (policyDetails.getCustomer() != null && policyDetails.getCustomer().getId() != null &&
             !policyDetails.getCustomer().getId().equals(existingPolicy.getCustomer().getId())) {
             throw new IllegalArgumentException("Cannot update customer id for the policy.");
         }
         
-        // Check scheme: if provided, it must match the existing policy's scheme
         if (policyDetails.getScheme() != null && policyDetails.getScheme().getId() != null &&
             !policyDetails.getScheme().getId().equals(existingPolicy.getScheme().getId())) {
             throw new IllegalArgumentException("Cannot update scheme id for the policy.");
         }
         
-        // Check policyId: if provided, it must match the existing policy's policyId
         if (policyDetails.getPolicyId() != null && 
             !policyDetails.getPolicyId().equals(existingPolicy.getPolicyId())) {
             throw new IllegalArgumentException("Cannot update policy id.");
         }
         
-        // Validate start date
+        // Validate allowed fields
         if (policyDetails.getStartDate() == null) {
             throw new IllegalArgumentException("Start date must be provided and be a valid date.");
         }
         
-        // Validate total premium amount
         if (policyDetails.getTotalPremiumAmount() == null || policyDetails.getTotalPremiumAmount() <= 0) {
             throw new IllegalArgumentException("Total premium amount must be a positive number.");
         }
         
-        // Validate maturity amount
         if (policyDetails.getMaturityAmount() == null || policyDetails.getMaturityAmount() <= 0) {
             throw new IllegalArgumentException("Maturity amount must be a positive number.");
         }
         
-        // Validate number of years
         if (policyDetails.getNumberOfYears() == null || policyDetails.getNumberOfYears() <= 0) {
             throw new IllegalArgumentException("Number of years must be a positive number.");
         }
         
-        // Validate policy status: must be "Active" or "Deactivated"
         if (policyDetails.getPolicyStatus() == null || 
             (!policyDetails.getPolicyStatus().equalsIgnoreCase("Active") &&
              !policyDetails.getPolicyStatus().equalsIgnoreCase("Deactivated"))) {
             throw new IllegalArgumentException("Policy status must be either 'Active' or 'Deactivated'.");
         }
         
-        // Only update allowed fields:
-        // Do not update policyId, customer, or scheme.
+        // Update only allowed fields:
         existingPolicy.setStartDate(policyDetails.getStartDate());
         existingPolicy.setTotalPremiumAmount(policyDetails.getTotalPremiumAmount());
         existingPolicy.setMaturityAmount(policyDetails.getMaturityAmount());

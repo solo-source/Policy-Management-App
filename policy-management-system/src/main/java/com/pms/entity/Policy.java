@@ -1,6 +1,9 @@
 package com.pms.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Pattern;
 import java.time.LocalDate;
 
 @Entity
@@ -10,24 +13,42 @@ public class Policy {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // This is the policy number (not updateable)
     @Column(nullable = false, unique = true)
-    private String policyId; // This could be considered as the policy number
+    @NotNull(message = "Policy ID is required")
+    private String policyId;
 
+    @NotNull(message = "Start date is required")
     private LocalDate startDate;
+    
+    @NotNull(message = "Total premium amount is required")
+    @Positive(message = "Total premium amount must be positive")
     private Double totalPremiumAmount;
+    
+    @NotNull(message = "Maturity amount is required")
+    @Positive(message = "Maturity amount must be positive")
     private Double maturityAmount;
+    
+    @NotNull(message = "Number of years is required")
+    @Positive(message = "Number of years must be positive")
     private Integer numberOfYears;
+    
+    @NotNull(message = "Policy status is required")
+    @Pattern(regexp = "Active|Deactivated", message = "Policy status must be either 'Active' or 'Deactivated'")
     private String policyStatus;
+    
     private String annuityTerm;
 
-    // Many-to-one relationship with Customer (already exists)
+    // Many-to-one relationship with Customer (read-only for this service)
     @ManyToOne
     @JoinColumn(name = "customer_id")
+    @NotNull(message = "Customer is required")
     private Customer customer;
 
-    // NEW: Many-to-one relationship with Scheme
+    // Many-to-one relationship with Scheme (read-only for this service)
     @ManyToOne
     @JoinColumn(name = "scheme_id")
+    @NotNull(message = "Scheme is required")
     private Scheme scheme;
 
     // Getters and Setters
@@ -103,7 +124,7 @@ public class Policy {
     public void setCustomer(Customer customer) {
         this.customer = customer;
     }
-    
+
     public Scheme getScheme() {
         return scheme;
     }
