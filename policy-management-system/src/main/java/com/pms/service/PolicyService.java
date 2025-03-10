@@ -8,6 +8,7 @@ import com.pms.exception.ResourceNotFoundException;
 import com.pms.repository.PolicyRepository;
 import com.pms.repository.CustomerRepository;
 import com.pms.repository.SchemeRepository;
+import com.pms.validation.OnUpdate;
 
 @Service
 @Validated
@@ -56,9 +57,8 @@ public class PolicyService {
     }
     
     public Policy updatePolicy(Long id, Policy policyDetails) {
-        // Retrieve the existing policy; throw exception if not found
         Policy existingPolicy = policyRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Policy not found with id " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Policy not found with id " + id));
 
         // Disallow update of restricted fields:
         if (policyDetails.getCustomer() != null) {
@@ -104,7 +104,6 @@ public class PolicyService {
         existingPolicy.setPolicyStatus(policyDetails.getPolicyStatus());
         existingPolicy.setAnnuityTerm(policyDetails.getAnnuityTerm());
 
-        // Save and return the updated policy
         return policyRepository.save(existingPolicy);
     }
     
