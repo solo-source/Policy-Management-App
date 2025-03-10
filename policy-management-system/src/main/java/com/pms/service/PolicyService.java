@@ -3,7 +3,6 @@ package com.pms.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-
 import com.pms.entity.Policy;
 import com.pms.exception.ResourceNotFoundException;
 import com.pms.repository.PolicyRepository;
@@ -24,59 +23,54 @@ public class PolicyService {
     private SchemeRepository schemeRepository;
 
     public Policy createPolicy(Policy policy) {
-        // Validate if Customer exists
+        // Validate if Customer exists (must be provided)
         if (policy.getCustomer() == null || policy.getCustomer().getId() == null ||
             !customerRepository.existsById(policy.getCustomer().getId())) {
             throw new ResourceNotFoundException("Customer not found with id " +
                 (policy.getCustomer() != null ? policy.getCustomer().getId() : "null"));
         }
 
-        // Validate if Scheme exists
+        // Validate if Scheme exists (must be provided)
         if (policy.getScheme() == null || policy.getScheme().getId() == null ||
             !schemeRepository.existsById(policy.getScheme().getId())) {
             throw new ResourceNotFoundException("Scheme not found with id " +
                 (policy.getScheme() != null ? policy.getScheme().getId() : "null"));
         }
 
-        // Generate a new policyId
+        // Generate a new policyId by checking the last record
         Policy lastPolicy = policyRepository.findTopByOrderByIdDesc();
         String newPolicyId;
         if (lastPolicy == null || lastPolicy.getPolicyId() == null) {
             newPolicyId = "POLICY001";
         } else {
-            // Remove the "POLICY" prefix and convert the numeric part to an integer
+            // Extract the numeric part after the "POLICY" prefix and increment it
             int lastNumber = Integer.parseInt(lastPolicy.getPolicyId().substring("POLICY".length()));
             int newNumber = lastNumber + 1;
-            newPolicyId = String.format("POLICY%03d", newNumber); // e.g., POLICY002, POLICY003, etc.
+            newPolicyId = String.format("POLICY%03d", newNumber); // Formats as POLICY001, POLICY002, etc.
         }
         
-        // Set the auto-generated policyId; user will no longer provide this
+        // Set the auto-generated policyId; user input is ignored for this field
         policy.setPolicyId(newPolicyId);
         
         return policyRepository.save(policy);
     }
-
     
     public Policy updatePolicy(Long id, Policy policyDetails) {
         // Retrieve the existing policy; throw exception if not found
         Policy existingPolicy = policyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Policy not found with id " + id));
 
-        // Ensure that the restricted fields are not being updated:
-        // - Customer, Scheme, and PolicyId must remain unchanged.
-        if (policyDetails.getCustomer() != null && policyDetails.getCustomer().getId() != null &&
-            !policyDetails.getCustomer().getId().equals(existingPolicy.getCustomer().getId())) {
-            throw new IllegalArgumentException("Cannot update customer id for the policy.");
+        // Disallow update of restricted fields:
+        if (policyDetails.getCustomer() != null) {
+            throw new IllegalArgumentException("Customer field is not allowed in policy update.");
         }
         
-        if (policyDetails.getScheme() != null && policyDetails.getScheme().getId() != null &&
-            !policyDetails.getScheme().getId().equals(existingPolicy.getScheme().getId())) {
-            throw new IllegalArgumentException("Cannot update scheme id for the policy.");
+        if (policyDetails.getScheme() != null) {
+            throw new IllegalArgumentException("Scheme field is not allowed in policy update.");
         }
         
-        if (policyDetails.getPolicyId() != null && 
-            !policyDetails.getPolicyId().equals(existingPolicy.getPolicyId())) {
-            throw new IllegalArgumentException("Cannot update policy id.");
+        if (policyDetails.getPolicyId() != null) {
+            throw new IllegalArgumentException("Policy ID field is not allowed in policy update.");
         }
         
         // Validate allowed fields
