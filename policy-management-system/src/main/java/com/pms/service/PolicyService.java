@@ -37,10 +37,25 @@ public class PolicyService {
             throw new ResourceNotFoundException("Scheme not found with id " +
                 (policy.getScheme() != null ? policy.getScheme().getId() : "null"));
         }
+
+        // Generate a new policyId
+        Policy lastPolicy = policyRepository.findTopByOrderByIdDesc();
+        String newPolicyId;
+        if (lastPolicy == null || lastPolicy.getPolicyId() == null) {
+            newPolicyId = "POLICY001";
+        } else {
+            // Remove the "POLICY" prefix and convert the numeric part to an integer
+            int lastNumber = Integer.parseInt(lastPolicy.getPolicyId().substring("POLICY".length()));
+            int newNumber = lastNumber + 1;
+            newPolicyId = String.format("POLICY%03d", newNumber); // e.g., POLICY002, POLICY003, etc.
+        }
         
-        // Create and save the policy (customer, scheme, and policyId remain as provided)
+        // Set the auto-generated policyId; user will no longer provide this
+        policy.setPolicyId(newPolicyId);
+        
         return policyRepository.save(policy);
     }
+
     
     public Policy updatePolicy(Long id, Policy policyDetails) {
         // Retrieve the existing policy; throw exception if not found
