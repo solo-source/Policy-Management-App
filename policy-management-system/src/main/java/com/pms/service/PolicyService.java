@@ -37,6 +37,33 @@ public class PolicyService {
             throw new ResourceNotFoundException("Scheme not found with id " +
                 (policy.getScheme() != null ? policy.getScheme().getId() : "null"));
         }
+        
+        // Validate numeric and other fields
+        if (policy.getStartDate() == null) {
+            throw new IllegalArgumentException("Start date must be provided and be a valid date.");
+        }
+        // Since totalPremiumAmount is a Double, any non-numeric input will be caught during deserialization.
+        if (policy.getTotalPremiumAmount() == null || policy.getTotalPremiumAmount() <= 0) {
+            throw new IllegalArgumentException("Total premium amount must be a positive number.");
+        }
+        // Similar check for maturityAmount.
+        if (policy.getMaturityAmount() == null || policy.getMaturityAmount() <= 0) {
+            throw new IllegalArgumentException("Maturity amount must be a positive number.");
+        }
+        // And for numberOfYears (an Integer).
+        if (policy.getNumberOfYears() == null || policy.getNumberOfYears() <= 0) {
+            throw new IllegalArgumentException("Number of years must be a positive number.");
+        }
+        if (policy.getPolicyStatus() == null || 
+            (!policy.getPolicyStatus().equalsIgnoreCase("Active") &&
+             !policy.getPolicyStatus().equalsIgnoreCase("Deactivated"))) {
+            throw new IllegalArgumentException("Policy status must be either 'Active' or 'Deactivated'.");
+        }
+        if (policy.getAnnuityTerm() == null ||
+            (!policy.getAnnuityTerm().equalsIgnoreCase("Yearly") &&
+             !policy.getAnnuityTerm().equalsIgnoreCase("Monthly"))) {
+            throw new IllegalArgumentException("Annuity Term must be either 'Yearly' or 'Monthly'.");
+        }
 
         // Generate a new policyId by checking the last record
         Policy lastPolicy = policyRepository.findTopByOrderByIdDesc();
@@ -50,7 +77,7 @@ public class PolicyService {
             newPolicyId = String.format("POLICY%03d", newNumber); // Formats as POLICY001, POLICY002, etc.
         }
         
-        // Set the auto-generated policyId; user input is ignored for this field
+        // Set the auto-generated policyId; user input is ignored for this field.
         policy.setPolicyId(newPolicyId);
         
         return policyRepository.save(policy);
@@ -64,36 +91,35 @@ public class PolicyService {
         if (policyDetails.getCustomer() != null) {
             throw new IllegalArgumentException("Customer field is not allowed in policy update.");
         }
-        
         if (policyDetails.getScheme() != null) {
             throw new IllegalArgumentException("Scheme field is not allowed in policy update.");
         }
-        
         if (policyDetails.getPolicyId() != null) {
             throw new IllegalArgumentException("Policy ID field is not allowed in policy update.");
         }
         
-        // Validate allowed fields
+        // Validate allowed fields (numeric checks will also prevent non-numeric inputs due to type conversion):
         if (policyDetails.getStartDate() == null) {
             throw new IllegalArgumentException("Start date must be provided and be a valid date.");
         }
-        
         if (policyDetails.getTotalPremiumAmount() == null || policyDetails.getTotalPremiumAmount() <= 0) {
             throw new IllegalArgumentException("Total premium amount must be a positive number.");
         }
-        
         if (policyDetails.getMaturityAmount() == null || policyDetails.getMaturityAmount() <= 0) {
             throw new IllegalArgumentException("Maturity amount must be a positive number.");
         }
-        
         if (policyDetails.getNumberOfYears() == null || policyDetails.getNumberOfYears() <= 0) {
             throw new IllegalArgumentException("Number of years must be a positive number.");
         }
-        
         if (policyDetails.getPolicyStatus() == null || 
             (!policyDetails.getPolicyStatus().equalsIgnoreCase("Active") &&
              !policyDetails.getPolicyStatus().equalsIgnoreCase("Deactivated"))) {
             throw new IllegalArgumentException("Policy status must be either 'Active' or 'Deactivated'.");
+        }
+        if (policyDetails.getAnnuityTerm() == null ||
+            (!policyDetails.getAnnuityTerm().equalsIgnoreCase("Yearly") &&
+             !policyDetails.getAnnuityTerm().equalsIgnoreCase("Monthly"))) {
+            throw new IllegalArgumentException("Annuity Term must be either 'Yearly' or 'Monthly'.");
         }
         
         // Update only allowed fields:
@@ -107,7 +133,7 @@ public class PolicyService {
         return policyRepository.save(existingPolicy);
     }
     
-    // View policy details by id; throw exception if not found
+    // View policy details by id; throw exception if not found.
     public Policy getPolicyById(Long id) {
         return policyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Policy not found with id " + id));
