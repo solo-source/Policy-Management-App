@@ -14,26 +14,23 @@ public class PolicyManagementUIController {
     @Autowired
     private PolicyClientService policyClientService;
 
-    // Display the main page with empty objects for the forms
     @GetMapping
     public String showPolicyManagementPage(Model model) {
-        // For create policy
         model.addAttribute("newPolicy", new Policy());
-        // For update policy
         model.addAttribute("updatePolicy", new Policy());
-        // For deactivate policy
-        model.addAttribute("deactivatePolicy", new Policy());
-        // For viewing policy
-        model.addAttribute("viewPolicyId", 0L);  // or null
         model.addAttribute("policyResult", null);
+        // Other attributes as needed
         return "policyManagement";
     }
 
-    // Handle creation form submission
     @PostMapping("/create")
     public String createPolicy(@ModelAttribute("newPolicy") Policy newPolicy, Model model) {
-        Policy createdPolicy = policyClientService.createPolicy(newPolicy);
-        model.addAttribute("message", "Policy created successfully with ID: " + createdPolicy.getPolicyId());
+        try {
+            Policy createdPolicy = policyClientService.createPolicy(newPolicy);
+            model.addAttribute("message", "Policy created successfully with ID: " + createdPolicy.getPolicyId());
+        } catch (Exception ex) {
+            model.addAttribute("error", "Error creating policy: " + ex.getMessage());
+        }
         return "redirect:/policy-management";
     }
 

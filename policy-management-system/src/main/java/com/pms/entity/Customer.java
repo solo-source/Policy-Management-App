@@ -2,9 +2,12 @@ package com.pms.entity;
 
 import jakarta.persistence.*;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "customers")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Customer {
 
     @Id
@@ -16,7 +19,7 @@ public class Customer {
 
     @Column(nullable = false)
     private String email;
-
+    
     // New optional fields
     @Column
     private String phoneNumber;
@@ -24,10 +27,11 @@ public class Customer {
     @Column
     private String address;
 
-    // One-to-many relationship with Policy
+    //One to many relation between Customer and policy
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Policy> policies;
-
+    
     // Default constructor
     public Customer() {
     }

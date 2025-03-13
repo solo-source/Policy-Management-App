@@ -85,7 +85,7 @@ public class PolicyService {
     
     public Policy updatePolicy(Long id, Policy policyDetails) {
         Policy existingPolicy = policyRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Policy not found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Policy not found with id " + id));
 
         // Disallow update of restricted fields:
         if (policyDetails.getCustomer() != null) {
@@ -97,38 +97,54 @@ public class PolicyService {
         if (policyDetails.getPolicyId() != null) {
             throw new IllegalArgumentException("Policy ID field is not allowed in policy update.");
         }
-        
-        // Validate allowed fields (numeric checks will also prevent non-numeric inputs due to type conversion):
-        if (policyDetails.getStartDate() == null) {
-            throw new IllegalArgumentException("Start date must be provided and be a valid date.");
+
+        // Update allowed fields if provided; skip if value is empty
+
+        if (policyDetails.getStartDate() != null) {
+            existingPolicy.setStartDate(policyDetails.getStartDate());
         }
-        if (policyDetails.getTotalPremiumAmount() == null || policyDetails.getTotalPremiumAmount() <= 0) {
-            throw new IllegalArgumentException("Total premium amount must be a positive number.");
+
+        if (policyDetails.getTotalPremiumAmount() != null) {
+            if (policyDetails.getTotalPremiumAmount() <= 0) {
+                throw new IllegalArgumentException("Total premium amount must be a positive number.");
+            }
+            existingPolicy.setTotalPremiumAmount(policyDetails.getTotalPremiumAmount());
         }
-        if (policyDetails.getMaturityAmount() == null || policyDetails.getMaturityAmount() <= 0) {
-            throw new IllegalArgumentException("Maturity amount must be a positive number.");
+
+        if (policyDetails.getMaturityAmount() != null) {
+            if (policyDetails.getMaturityAmount() <= 0) {
+                throw new IllegalArgumentException("Maturity amount must be a positive number.");
+            }
+            existingPolicy.setMaturityAmount(policyDetails.getMaturityAmount());
         }
-        if (policyDetails.getNumberOfYears() == null || policyDetails.getNumberOfYears() <= 0) {
-            throw new IllegalArgumentException("Number of years must be a positive number.");
+
+        if (policyDetails.getNumberOfYears() != null) {
+            if (policyDetails.getNumberOfYears() <= 0) {
+                throw new IllegalArgumentException("Number of years must be a positive number.");
+            }
+            existingPolicy.setNumberOfYears(policyDetails.getNumberOfYears());
         }
-        if (policyDetails.getPolicyStatus() == null || 
-            (!policyDetails.getPolicyStatus().equalsIgnoreCase("Active") &&
-             !policyDetails.getPolicyStatus().equalsIgnoreCase("Deactivated"))) {
-            throw new IllegalArgumentException("Policy status must be either 'Active' or 'Deactivated'.");
+
+        if (policyDetails.getPolicyStatus() != null) {
+            String status = policyDetails.getPolicyStatus().trim();
+            // If the trimmed value is not empty, validate and update; otherwise skip
+            if (!status.isEmpty()) {
+                if (!(status.equalsIgnoreCase("Active") || status.equalsIgnoreCase("Deactivated"))) {
+                    throw new IllegalArgumentException("Policy status must be either 'Active' or 'Deactivated'.");
+                }
+                existingPolicy.setPolicyStatus(status);
+            }
         }
-        if (policyDetails.getAnnuityTerm() == null ||
-            (!policyDetails.getAnnuityTerm().equalsIgnoreCase("Yearly") &&
-             !policyDetails.getAnnuityTerm().equalsIgnoreCase("Monthly"))) {
-            throw new IllegalArgumentException("Annuity Term must be either 'Yearly' or 'Monthly'.");
+
+        if (policyDetails.getAnnuityTerm() != null) {
+            String term = policyDetails.getAnnuityTerm().trim();
+            if (!term.isEmpty()) {
+                if (!(term.equalsIgnoreCase("Yearly") || term.equalsIgnoreCase("Monthly"))) {
+                    throw new IllegalArgumentException("Annuity Term must be either 'Yearly' or 'Monthly'.");
+                }
+                existingPolicy.setAnnuityTerm(term);
+            }
         }
-        
-        // Update only allowed fields:
-        existingPolicy.setStartDate(policyDetails.getStartDate());
-        existingPolicy.setTotalPremiumAmount(policyDetails.getTotalPremiumAmount());
-        existingPolicy.setMaturityAmount(policyDetails.getMaturityAmount());
-        existingPolicy.setNumberOfYears(policyDetails.getNumberOfYears());
-        existingPolicy.setPolicyStatus(policyDetails.getPolicyStatus());
-        existingPolicy.setAnnuityTerm(policyDetails.getAnnuityTerm());
 
         return policyRepository.save(existingPolicy);
     }

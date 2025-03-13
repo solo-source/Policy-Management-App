@@ -2,9 +2,12 @@ package com.pms.entity;
 
 import jakarta.persistence.*;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "schemes")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Scheme {
 
     @Id
@@ -25,6 +28,7 @@ public class Scheme {
 
     // One-to-many relationship with Policy
     @OneToMany(mappedBy = "scheme", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore  // Prevent circular reference during JSON serialization
     private List<Policy> policies;
 
     // Default constructor
