@@ -8,7 +8,8 @@ import com.pms.exception.ResourceNotFoundException;
 import com.pms.repository.PolicyRepository;
 import com.pms.repository.CustomerRepository;
 import com.pms.repository.SchemeRepository;
-import com.pms.validation.OnUpdate;
+import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @Validated
@@ -153,5 +154,26 @@ public class PolicyService {
     public Policy getPolicyById(Long id) {
         return policyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Policy not found with id " + id));
+    }
+    
+ // New methods for view operations:
+    public List<Policy> getPoliciesBySchemeName(String schemeName) {
+        return policyRepository.findBySchemeSchemeName(schemeName);
+    }
+    
+    public List<Policy> getPoliciesByStartDate(LocalDate startDate) {
+        return policyRepository.findByStartDate(startDate);
+    }
+    
+    public List<Policy> getPoliciesByPremiumAmountRange(Double min, Double max) {
+        return policyRepository.findByTotalPremiumAmountBetween(min, max);
+    }
+    
+    public List<Policy> getPoliciesByMaturityAmountRange(Double min, Double max) {
+        return policyRepository.findByMaturityAmountBetween(min, max);
+    }
+    
+    public List<Policy> getPoliciesByNumberOfYears(Integer years) {
+        return policyRepository.findByNumberOfYears(years);
     }
 }

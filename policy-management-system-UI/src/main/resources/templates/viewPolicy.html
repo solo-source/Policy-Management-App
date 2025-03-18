@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>View Policy</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <style>
+        .custom-container { 
+            max-width: 70%; 
+            margin: auto; 
+            margin-top: 3rem; 
+        }
+    </style>
+</head>
+<body>
+<div class="container custom-container">
+    <h2 class="text-center mb-4">View Policy</h2>
+    <form id="viewPolicyForm">
+        <div class="mb-3">
+            <label for="policyIdToView" class="form-label">Policy ID</label>
+            <input type="number" id="policyIdToView" class="form-control" placeholder="Enter numeric policy ID" required min="1" />
+        </div>
+        <button type="submit" class="btn btn-info">View Policy</button>
+        <a href="/policy-management/dashboard" class="btn btn-secondary ms-2">Back to Dashboard</a>
+    </form>
+    <div id="policyDetails" class="mt-4" style="display:none;">
+        <h5>Policy Details:</h5>
+        <p><strong>ID:</strong> <span id="detailId"></span></p>
+        <p><strong>Policy ID:</strong> <span id="detailPolicyId"></span></p>
+        <p><strong>Start Date:</strong> <span id="detailStartDate"></span></p>
+        <p><strong>Total Premium Amount:</strong> <span id="detailTotalPremiumAmount"></span></p>
+        <p><strong>Maturity Amount:</strong> <span id="detailMaturityAmount"></span></p>
+        <p><strong>Number of Years:</strong> <span id="detailNumberOfYears"></span></p>
+        <p><strong>Policy Status:</strong> <span id="detailPolicyStatus"></span></p>
+        <p><strong>Annuity Term:</strong> <span id="detailAnnuityTerm"></span></p>
+    </div>
+</div>
+<script>
+    document.getElementById("viewPolicyForm").addEventListener("submit", function(e){
+        e.preventDefault();
+        var backendUrl = "http://localhost:7281/api/policies";
+        var policyId = document.getElementById("policyIdToView").value;
+        fetch(backendUrl + "/" + policyId)
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => { throw new Error(text) });
+            }
+            return response.json();
+        })
+        .then(result => {
+            document.getElementById("detailId").textContent = result.id;
+            document.getElementById("detailPolicyId").textContent = result.policyId;
+            document.getElementById("detailStartDate").textContent = result.startDate;
+            document.getElementById("detailTotalPremiumAmount").textContent = result.totalPremiumAmount;
+            document.getElementById("detailMaturityAmount").textContent = result.maturityAmount;
+            document.getElementById("detailNumberOfYears").textContent = result.numberOfYears;
+            document.getElementById("detailPolicyStatus").textContent = result.policyStatus;
+            document.getElementById("detailAnnuityTerm").textContent = result.annuityTerm;
+            document.getElementById("policyDetails").style.display = "block";
+            alert("Success: Policy details loaded successfully.");
+        })
+        .catch(error => {
+            alert("Error: " + error.message);
+        });
+    });
+</script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -13,7 +13,7 @@ public class PolicyClientService {
     private RestTemplate restTemplate;
 
     @Value("${backend.url}")
-    private String backendUrl; // e.g., http://localhost:8080/api/policies
+    private String backendUrl; // e.g., http://localhost:7281/api/policies
 
     public Policy createPolicy(Policy policy) {
         String url = backendUrl + "/create";
@@ -29,6 +29,31 @@ public class PolicyClientService {
     public Policy getPolicyById(Long id) {
         String url = backendUrl + "/" + id;
         return restTemplate.getForObject(url, Policy.class);
+    }
+    
+    public Policy[] getPoliciesBySchemeName(String schemeName) {
+        String url = backendUrl + "/scheme/" + schemeName;
+        return restTemplate.getForObject(url, Policy[].class);
+    }
+
+    public Policy[] getPoliciesByDate(String date) {
+        String url = backendUrl + "/date/" + date;
+        return restTemplate.getForObject(url, Policy[].class);
+    }
+
+    public Policy[] getPoliciesByPremiumRange(Double min, Double max) {
+        String url = backendUrl + "/premium?min=" + min + "&max=" + max;
+        return restTemplate.getForObject(url, Policy[].class);
+    }
+
+    public Policy[] getPoliciesByMaturityRange(Double min, Double max) {
+        String url = backendUrl + "/maturity?min=" + min + "&max=" + max;
+        return restTemplate.getForObject(url, Policy[].class);
+    }
+
+    public Policy[] getPoliciesByYears(Integer years) {
+        String url = backendUrl + "/years/" + years;
+        return restTemplate.getForObject(url, Policy[].class);
     }
 
     //deactivate method
